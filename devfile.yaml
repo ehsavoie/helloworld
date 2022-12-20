@@ -25,8 +25,10 @@ components:
           value: '-Djava.security.egd=file:/dev/urandom'
         - name: MVN_ARGS_APPEND
           value: '-Popenshift -Dwildfly.package.deployment.skip=true -s /home/jboss/.m2/settings.xml -Dmaven.repo.local=/home/jboss/.m2/repository -Dcom.redhat.xpaas.repo.jbossorg'
-        - name: JAVA_DEBUG_PORT
+        - name: DEBUG_PORT
           value: "5005"
+        - name: SCRIPT_DEBUG
+          value: "true"
       endpoints:
         - name: debug
           exposure: internal
@@ -52,7 +54,7 @@ commands:
     exec:
       label: 1-Package and start the application.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && JBOSS_HOME=${PROJECT_SOURCE}/target/server; $JBOSS_HOME/bin/standalone.sh -Djboss.node.name=numberguess
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && export JBOSS_HOME=${PROJECT_SOURCE}/target/server; $JBOSS_HOME/bin/standalone.sh -Djboss.node.name=numberguess
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
@@ -70,7 +72,7 @@ commands:
     exec:
       label: 3-Package and start the application in debug mode.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && SERVER_ARGS="--debug"; JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && export SERVER_ARGS="--debug"; export JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: debug
