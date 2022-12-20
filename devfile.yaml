@@ -54,7 +54,7 @@ commands:
     exec:
       label: 1-Package and start the application.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && export JBOSS_HOME=${PROJECT_SOURCE}/target/server; $JBOSS_HOME/bin/standalone.sh -Djboss.node.name=numberguess
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && export JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
@@ -63,7 +63,7 @@ commands:
     exec:
       label: 2-Stop the application.
       component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} org.wildfly.plugins:wildfly-maven-plugin:shutdown
+      commandLine: target/server/bin/jboss-cli.sh -c "shutdown --timeout=60"
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
