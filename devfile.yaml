@@ -1,16 +1,16 @@
 schemaVersion: 2.1.0
 metadata:
-  name: java-wildfly-helloword
+  name: java-eap-helloworld
   version: 2.0.0
-  website: https://wildfly.org
-  displayName: JBoss EAP helloworld
+  website: https://www.redhat.com/fr/technologies/jboss-middleware/application-platform
+  displayName: JBoss EAP HelloWorld
   description: Upstream WildFly
-  icon: https://design.jboss.org/wildfly/logo/final/wildfly_logomark.svg
+  icon: https://developers.redhat.com/sites/default/files/styles/article_feature/public/blog/2020/06/Logo-Red_Hat-JBoss_Enterprise_Application_Platform-B-Standard-RGB.png
   tags: ['Java', 'JBoss EAP']
   projectType: 'eap'
   language: 'java'
 components:
-  - name: wildfly
+  - name: eap
     container:
       image: registry.redhat.io/jboss-eap-8-tech-preview/eap8-openjdk17-builder-openshift-rhel8:latest
       memoryLimit: 1512Mi
@@ -24,11 +24,9 @@ components:
         - name: JAVA_OPTS
           value: '-Djava.security.egd=file:/dev/urandom'
         - name: MVN_ARGS_APPEND
-          value: '-Popenshift -Dwildfly.package.deployment.skip=true -s /home/jboss/.m2/settings.xml -Dmaven.repo.local=/home/jboss/.m2/repository -Dcom.redhat.xpaas.repo.jbossorg'
+          value: '-Popenshift -s /home/jboss/.m2/settings.xml -Dmaven.repo.local=/home/jboss/.m2/repository -Dcom.redhat.xpaas.repo.jbossorg'
         - name: DEBUG_PORT
           value: "5005"
-        - name: SCRIPT_DEBUG
-          value: "true"
       endpoints:
         - name: debug
           exposure: internal
@@ -53,8 +51,8 @@ commands:
   - id: start
     exec:
       label: 1-Package and start the application.
-      component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && export JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      component: eap
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && export JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
@@ -62,8 +60,8 @@ commands:
   - id: shutdown
     exec:
       label: 2-Stop the application.
-      component: wildfly
-      commandLine: target/server/bin/jboss-cli.sh -c "shutdown --timeout=60"
+      component: eap
+      commandLine: export JBOSS_HOME=${PROJECT_SOURCE}/target/server; target/server/bin/jboss-cli.sh -c "shutdown --timeout=60"
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
@@ -71,8 +69,8 @@ commands:
   - id: debug
     exec:
       label: 3-Package and start the application in debug mode.
-      component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} clean package && cp target/*.war target/server/standalone/deployments/ROOT.war && export SERVER_ARGS="--debug"; export JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
+      component: eap
+      commandLine: mvn ${MVN_ARGS_APPEND} clean package && export SERVER_ARGS="--debug"; export JBOSS_HOME=${PROJECT_SOURCE}/target/server; /usr/local/s2i/run
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: debug
@@ -80,8 +78,8 @@ commands:
   - id: deploy
     exec:
       label: 4-Update the application.
-      component: wildfly
-      commandLine: mvn ${MVN_ARGS_APPEND} package && cp target/*.war target/server/standalone/deployments/ROOT.war
+      component: eap
+      commandLine: mvn ${MVN_ARGS_APPEND} package && export JBOSS_HOME=${PROJECT_SOURCE}/target/server; target/server/bin/jboss-cli.sh -c "deploy target/ROOT.war --force"
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: build
